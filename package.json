@@ -4,7 +4,8 @@
   "description": "Simple js package to make div float",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "mkdir -p dist && browserify index.js -s floatDiv -o dist/float-div.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,6 @@
   },
   "homepage": "https://github.com/Lenny4/float-div#readme",
   "devDependencies": {
-    "webpack": "^4.43.0"
+    "browserify": "^16.5.1"
   }
 }

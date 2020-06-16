@@ -1,2 +1,2 @@
-const floatDiv = require('./src/app');
-module.exports = floatDiv;
+'use strict';
+module.exports = require('./scripts');
