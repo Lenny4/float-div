@@ -92,6 +92,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                         indexColumn = objNull.index;
                     }
                     if (childIndex !== -1) {
+                        const child = childrenDiv[childIndex];
                         // region check if div on right is bigger
                         const myColumnHeight = heights[indexColumn];
                         let nextColumnHeight = null;
@@ -107,10 +108,53 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                                 }
                             }
                         }
-                        if (nextColumnHeight !== null && nextColumnHeight > myColumnHeight && upperElement !== null) {
-                            const newChildIndex = childrenDiv.findIndex(x => x.columnWidth <= upperElement.columnWidth);
-                            if (newChildIndex !== -1) {
-                                childIndex = newChildIndex;
+                        if (nextColumnHeight !== null && upperElement !== null) {
+                            if (nextColumnHeight > myColumnHeight) {
+                                const newChildIndex = childrenDiv.findIndex(x => x.columnWidth <= upperElement.columnWidth);
+                                if (newChildIndex !== -1) {
+                                    childIndex = newChildIndex;
+                                }
+                            } else if (nextColumnHeight < myColumnHeight) {
+                                // d'abord vérifier si il n'y a pas une colonne plus petite
+                                // find smallest index column with enough width
+                                let availableColumnIndexes = [];
+                                for (let i = 0; i < maxArrayWidth; i++) {
+                                    if (heights[i] < myColumnHeight) {
+                                        availableColumnIndexes.push({
+                                            columnIndex: i,
+                                            height: heights[i],
+                                        })
+                                    }
+                                }
+                                availableColumnIndexes = availableColumnIndexes.sort((prev, current) => {
+                                    if (prev.height < current.height) {
+                                        return -1;
+                                    } else if (prev.height > current.height) {
+                                        return 1;
+                                    } else {
+                                        return 0;
+                                    }
+                                });
+                                for (let availableColumnIndex of availableColumnIndexes) {
+                                    if (typeof nullColumnAvailable.find(x => x.index <= availableColumnIndex.columnIndex) !== 'undefined') {
+                                        let changeColumn = true;
+                                        const thisColumnHeight = heights[availableColumnIndex.columnIndex];
+                                        const to = availableColumnIndex.columnIndex + child.columnWidth;
+                                        if (to >= maxArrayWidth) {
+                                            break;
+                                        }
+                                        for (let i = availableColumnIndex.columnIndex; i < to; i++) {
+                                            if (heights[availableColumnIndex.columnIndex] !== thisColumnHeight) {
+                                                changeColumn = false;
+                                                break;
+                                            }
+                                        }
+                                        if (changeColumn) {
+                                            indexColumn = availableColumnIndex.columnIndex;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
                         // endregion
