@@ -22,12 +22,12 @@ function registerParentFloatDiv(element, animation) {
     }
 }
 
-function getChildrenDiv(parentEl, maxArrayWidth, windowWidth) {
+function getChildrenDiv(parentEl, maxArrayWidth, containerWidth) {
     const result = [];
     $(parentEl).find('> *').each((indexChild, child) => {
         result.push({
             target: child,
-            columnWidth: Math.round(maxArrayWidth * ($(child).outerWidth() / windowWidth)),
+            columnWidth: Math.round(maxArrayWidth * ($(child).outerWidth() / containerWidth)),
             height: $(child).outerHeight(),
         })
     });
@@ -65,17 +65,17 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
     if (animation === 0) {
         animation = null;
     }
-    const windowWidth = $(window).outerWidth();
     // endregion
     $(selector).each((i, e) => registerParentFloatDiv(e, animation));
     for (let parent of parentDivs) {
+        const containerWidth = $(parent.target).outerWidth();
         const positions = [];
         const heights = [];
         for (let i = 0; i < maxArrayWidth; i++) {
             heights[i] = 0;
         }
         let line = 0;
-        const childrenDiv = getChildrenDiv(parent.target, maxArrayWidth, windowWidth);
+        const childrenDiv = getChildrenDiv(parent.target, maxArrayWidth, containerWidth);
         addLine(positions, line, maxArrayWidth);
         const nbChildren = childrenDiv.length;
         for (let n = 0; n < nbChildren; n++) {
