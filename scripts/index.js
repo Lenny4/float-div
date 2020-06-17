@@ -121,10 +121,16 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                     const child = childrenDiv[childIndex];
                     for (let i = 0; i < child.columnWidth; i++) {
                         if (i === 0) {
+                            let height = heights[indexColumn];
+                            for (let y = 0; y < child.columnWidth; y++) {
+                                if (!isNaN(heights[indexColumn + y]) && heights[indexColumn + y] > height) {
+                                    height = heights[indexColumn + y];
+                                }
+                            }
                             positions[line][indexColumn] = {
                                 target: child.target,
                                 left: (indexColumn / maxArrayWidth) * 100,
-                                top: heights[indexColumn],
+                                top: height,
                                 columnWidth: child.columnWidth,
                             };
                         } else {
