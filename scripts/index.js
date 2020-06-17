@@ -2,14 +2,26 @@
 const $ = require('jquery');
 
 const parentDivs = [];
+$(window).on('resize', () => {
+    console.log(parentDivs);
+    for (let parent of parentDivs) {
+        const reloadFloatIndex = parent.reloadFloatIndex;
+        const currentReloadFloatIndex = getReloadFloatIndex(parent.reloadFloat);
+        if (reloadFloatIndex !== currentReloadFloatIndex) {
+            FloatDiv(parent.target, parent.animation, parent.gridWidth, parent.reloadFloat);
+            parent.reloadFloatIndex = currentReloadFloatIndex;
+        }
+    }
+});
 
-// is resizing: bool
-
-function registerParentFloatDiv(element, animation) {
+function registerParentFloatDiv(element, animation, gridWidth, reloadFloatIndex, reloadFloat) {
     let addParent = true;
     for (let parent of parentDivs) {
         if (element === parent.target) {
             element.animation = animation;
+            element.gridWidth = gridWidth;
+            element.reloadFloatIndex = reloadFloatIndex;
+            element.reloadFloat = reloadFloat;
             addParent = false;
             break;
         }
@@ -18,40 +30,43 @@ function registerParentFloatDiv(element, animation) {
         parentDivs.push({
             target: element,
             animation: animation,
+            gridWidth: gridWidth,
+            reloadFloatIndex: reloadFloatIndex,
+            reloadFloat: reloadFloat,
         });
     }
 }
 
-function getChildrenDiv(parentEl, maxArrayWidth, containerWidth) {
+function getChildrenDiv(parentEl, gridWidth, containerWidth) {
     const result = [];
     $(parentEl).find('> *').each((indexChild, child) => {
         result.push({
             target: child,
-            columnWidth: Math.round(maxArrayWidth * ($(child).outerWidth() / containerWidth)),
+            columnWidth: Math.round(gridWidth * ($(child).outerWidth() / containerWidth)),
             height: $(child).outerHeight(),
         })
     });
     return result;
 }
 
-function addLine(positions, line, maxArrayWidth) {
-    for (let column = 0; column < maxArrayWidth; column++) {
+function addLine(positions, line, gridWidth) {
+    for (let column = 0; column < gridWidth; column++) {
         const array = [];
-        for (let i = 0; i < maxArrayWidth; i++) {
+        for (let i = 0; i < gridWidth; i++) {
             array[i] = null;
         }
         positions[line] = array;
     }
 }
 
-function getNullColumnAvailable(positions, maxArrayWidth, line) {
+function getNullColumnAvailable(positions, gridWidth, line) {
     const nullColumnAvailable = [];
     let objNull = {index: null, length: null};
-    for (let i = 0; i < maxArrayWidth; i++) {
+    for (let i = 0; i < gridWidth; i++) {
         if (positions[line][i] === null && objNull.index === null) {
             objNull.index = i;
         }
-        if (objNull.index !== null && (positions[line][i] !== null || i === (maxArrayWidth - 1))) {
+        if (objNull.index !== null && (positions[line][i] !== null || i === (gridWidth - 1))) {
             objNull.length = 1 + i - objNull.index;
             nullColumnAvailable.push(JSON.parse(JSON.stringify(objNull)));
             objNull = {index: null, length: null};
@@ -60,27 +75,40 @@ function getNullColumnAvailable(positions, maxArrayWidth, line) {
     return nullColumnAvailable;
 }
 
-const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
+function getReloadFloatIndex(reloadFloat) {
+    let reloadFloatIndex = 0;
+    for (const w of reloadFloat) {
+        if (w > $(window).width()) {
+            break;
+        }
+        reloadFloatIndex++;
+    }
+    return reloadFloatIndex;
+}
+
+// reloadFloat: https://getbootstrap.com/docs/4.0/layout/grid/#grid-options
+const FloatDiv = function (selector, animation = 200, gridWidth = 12, reloadFloat = [576, 768, 992, 1200]) {
     // region init
-    if (animation === 0) {
+    if (animation === 0 || isNaN(animation)) {
         animation = null;
     }
+    const reloadFloatIndex = getReloadFloatIndex(reloadFloat);
     // endregion
-    $(selector).each((i, e) => registerParentFloatDiv(e, animation));
+    $(selector).each((i, e) => registerParentFloatDiv(e, animation, gridWidth, reloadFloatIndex, reloadFloat));
     for (let parent of parentDivs) {
         const containerWidth = $(parent.target).outerWidth();
         const positions = [];
         const heights = [];
-        for (let i = 0; i < maxArrayWidth; i++) {
+        for (let i = 0; i < gridWidth; i++) {
             heights[i] = 0;
         }
         let line = 0;
-        const childrenDiv = getChildrenDiv(parent.target, maxArrayWidth, containerWidth);
-        addLine(positions, line, maxArrayWidth);
+        const childrenDiv = getChildrenDiv(parent.target, gridWidth, containerWidth);
+        addLine(positions, line, gridWidth);
         const nbChildren = childrenDiv.length;
         for (let n = 0; n < nbChildren; n++) {
             // region get null column available
-            let nullColumnAvailable = getNullColumnAvailable(positions, maxArrayWidth, line);
+            let nullColumnAvailable = getNullColumnAvailable(positions, gridWidth, line);
             let addLineColumn = true;
             const smallestColumnHeight = Math.min(...heights);
             for (let objNull of nullColumnAvailable) {
@@ -96,8 +124,8 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
             }
             if (addLineColumn) {
                 line++;
-                addLine(positions, line, maxArrayWidth);
-                nullColumnAvailable = getNullColumnAvailable(positions, maxArrayWidth, line);
+                addLine(positions, line, gridWidth);
+                nullColumnAvailable = getNullColumnAvailable(positions, gridWidth, line);
             }
             // endregion
             // region find child to add
@@ -122,7 +150,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                                 tempLine--;
                             }
                             if (upperElement !== null) {
-                                for (let i = indexColumn; i < maxArrayWidth; i++) {
+                                for (let i = indexColumn; i < gridWidth; i++) {
                                     if (positions[line - 1][i] !== null && positions[line - 1][i].target !== upperElement.target) {
                                         nextColumnHeight = heights[i];
                                         break;
@@ -135,7 +163,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                         if (nextColumnHeight !== null && upperElement !== null) {
                             // region find smallest index column with enough width
                             let availableColumnIndexes = [];
-                            for (let i = 0; i < maxArrayWidth; i++) {
+                            for (let i = 0; i < gridWidth; i++) {
                                 if (heights[i] < myColumnHeight) {
                                     availableColumnIndexes.push({
                                         columnIndex: i,
@@ -158,7 +186,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                                     if (typeof nullColumnAvailable.find(x => x.index <= availableColumnIndex.columnIndex) !== 'undefined') {
                                         const thisColumnHeight = heights[availableColumnIndex.columnIndex];
                                         const to = availableColumnIndex.columnIndex + child.columnWidth;
-                                        if (to > maxArrayWidth) {
+                                        if (to > gridWidth) {
                                             break;
                                         }
                                         for (let i = availableColumnIndex.columnIndex; i < to; i++) {
@@ -188,7 +216,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                 if (childIndex !== -1) {
                     if (positions[line][indexColumn] !== null) {
                         line++;
-                        addLine(positions, line, maxArrayWidth);
+                        addLine(positions, line, gridWidth);
                     }
                     const child = childrenDiv[childIndex];
                     for (let i = 0; i < child.columnWidth; i++) {
@@ -201,7 +229,7 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                             }
                             positions[line][indexColumn] = {
                                 target: child.target,
-                                left: (indexColumn / maxArrayWidth) * 100,
+                                left: (indexColumn / gridWidth) * 100,
                                 top: height,
                                 columnWidth: child.columnWidth,
                             };
@@ -218,8 +246,8 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                     childrenDiv.splice(childIndex, 1);
                 } else {
                     line++;
-                    addLine(positions, line, maxArrayWidth);
-                    nullColumnAvailable = getNullColumnAvailable(positions, maxArrayWidth, line);
+                    addLine(positions, line, gridWidth);
+                    nullColumnAvailable = getNullColumnAvailable(positions, gridWidth, line);
                 }
             }
             // endregion
