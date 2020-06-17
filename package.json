@@ -23,7 +23,5 @@
   "devDependencies": {
     "browserify": "^16.5.1"
   },
-  "dependencies": {
-    "jquery": "^3.5.1"
-  }
+  "dependencies": {}
 }

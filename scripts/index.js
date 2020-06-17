@@ -1,18 +1,17 @@
 'use strict';
-const $ = require('jquery');
 
 const parentDivs = [];
-$(window).on('resize', () => {
+window.onresize = () => {
     for (let parent of parentDivs) {
         const reloadFloatIndex = parent.reloadFloatIndex;
         const currentReloadFloatIndex = getReloadFloatIndex(parent.reloadFloat);
         if (reloadFloatIndex !== currentReloadFloatIndex) {
-            console.log(reloadFloatIndex, parent.reloadFloat[reloadFloatIndex]);
+            console.log(1);
             FloatDiv(parent.target, parent.animation, parent.gridWidth, parent.reloadFloat);
             parent.reloadFloatIndex = currentReloadFloatIndex;
         }
     }
-});
+};
 
 function registerParentFloatDiv(element, animation, gridWidth, reloadFloatIndex, reloadFloat) {
     let addParent = true;
@@ -40,13 +39,13 @@ function registerParentFloatDiv(element, animation, gridWidth, reloadFloatIndex,
 
 function getChildrenDiv(parentEl, gridWidth, containerWidth) {
     const result = [];
-    $(parentEl).find('> *').each((indexChild, child) => {
+    for (const child of parentEl.children) {
         result.push({
             target: child,
-            columnWidth: Math.round(gridWidth * ($(child).outerWidth() / containerWidth)),
-            height: $(child).outerHeight(),
-        })
-    });
+            columnWidth: Math.round(gridWidth * (child.clientWidth / containerWidth)),
+            height: child.clientHeight,
+        });
+    }
     return result;
 }
 
@@ -79,12 +78,27 @@ function getNullColumnAvailable(positions, gridWidth, line) {
 function getReloadFloatIndex(reloadFloat) {
     let reloadFloatIndex = 0;
     for (const w of reloadFloat) {
-        if (w > $(window).width()) {
+        if (w > window.innerWidth) {
             break;
         }
         reloadFloatIndex++;
     }
     return reloadFloatIndex;
+}
+
+function fadeIn(el, time) {
+    el.style.opacity = 0;
+
+    let last = +new Date();
+    const tick = function () {
+        el.style.opacity = +el.style.opacity + (new Date() - last) / time;
+        last = +new Date();
+
+        if (+el.style.opacity < 1) {
+            (window.requestAnimationFrame && requestAnimationFrame(tick)) || setTimeout(tick, 16);
+        }
+    };
+    tick();
 }
 
 // reloadFloat: https://getbootstrap.com/docs/4.0/layout/grid/#grid-options
@@ -95,9 +109,16 @@ const FloatDiv = function (selector, animation = 400, gridWidth = 12, reloadFloa
     }
     const reloadFloatIndex = getReloadFloatIndex(reloadFloat);
     // endregion
-    $(selector).each((i, e) => registerParentFloatDiv(e, animation, gridWidth, reloadFloatIndex, reloadFloat));
+    if (typeof selector === 'string') {
+        const list = document.querySelectorAll(selector);
+        for (const e of list) {
+            registerParentFloatDiv(e, animation, gridWidth, reloadFloatIndex, reloadFloat);
+        }
+    } else {
+        registerParentFloatDiv(selector, animation, gridWidth, reloadFloatIndex, reloadFloat);
+    }
     for (let parent of parentDivs) {
-        const containerWidth = $(parent.target).outerWidth();
+        const containerWidth = parent.target.clientWidth;
         const positions = [];
         const heights = [];
         for (let i = 0; i < gridWidth; i++) {
@@ -256,21 +277,17 @@ const FloatDiv = function (selector, animation = 400, gridWidth = 12, reloadFloa
         for (let position of positions) {
             for (let el of position) {
                 if (el !== null && el.top !== null) {
-                    if (parent.animation === null) {
-                        $(el.target).css('position', 'absolute').css('left', el.left + '%').css('top', el.top + 'px');
-                    } else {
-                        if (parent.isCreating) {
-                            $(el.target).css('position', 'absolute').css('left', el.left + '%').css('top', el.top + 'px').hide().fadeIn(parent.animation);
-                        } else {
-                            $(el.target).css('position', 'absolute');
-                            $(el.target).animate({left: el.left + '%', top: el.top + 'px'});
-                        }
-                    }
-                    if (parent.isCreating) {
-                        parent.isCreating = false;
+                    el.target.style.position = 'absolute';
+                    el.target.style.left = el.left + '%';
+                    el.target.style.top = el.top + 'px';
+                    if (parent.animation !== null && parent.isCreating) {
+                        fadeIn(el.target, parent.animation);
                     }
                 }
             }
+        }
+        if (parent.isCreating) {
+            parent.isCreating = false;
         }
     }
 };
