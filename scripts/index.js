@@ -81,6 +81,24 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
         for (let n = 0; n < nbChildren; n++) {
             // region get null column available
             let nullColumnAvailable = getNullColumnAvailable(positions, maxArrayWidth, line);
+            let addLineColumn = true;
+            const smallestColumnHeight = Math.min(...heights);
+            for (let objNull of nullColumnAvailable) {
+                for (let i = objNull.index; i < (objNull.index + objNull.length); i++) {
+                    if (heights[i] <= smallestColumnHeight) {
+                        addLineColumn = false;
+                        break;
+                    }
+                }
+                if (addLineColumn === false) {
+                    break;
+                }
+            }
+            if (addLineColumn) {
+                line++;
+                addLine(positions, line, maxArrayWidth);
+                nullColumnAvailable = getNullColumnAvailable(positions, maxArrayWidth, line);
+            }
             // endregion
             // region find child to add
             let childIndex = -1;
