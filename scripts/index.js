@@ -3,11 +3,11 @@ const $ = require('jquery');
 
 const parentDivs = [];
 $(window).on('resize', () => {
-    console.log(parentDivs);
     for (let parent of parentDivs) {
         const reloadFloatIndex = parent.reloadFloatIndex;
         const currentReloadFloatIndex = getReloadFloatIndex(parent.reloadFloat);
         if (reloadFloatIndex !== currentReloadFloatIndex) {
+            console.log(reloadFloatIndex, parent.reloadFloat[reloadFloatIndex]);
             FloatDiv(parent.target, parent.animation, parent.gridWidth, parent.reloadFloat);
             parent.reloadFloatIndex = currentReloadFloatIndex;
         }
@@ -33,6 +33,7 @@ function registerParentFloatDiv(element, animation, gridWidth, reloadFloatIndex,
             gridWidth: gridWidth,
             reloadFloatIndex: reloadFloatIndex,
             reloadFloat: reloadFloat,
+            isCreating: true,
         });
     }
 }
@@ -87,7 +88,7 @@ function getReloadFloatIndex(reloadFloat) {
 }
 
 // reloadFloat: https://getbootstrap.com/docs/4.0/layout/grid/#grid-options
-const FloatDiv = function (selector, animation = 200, gridWidth = 12, reloadFloat = [576, 768, 992, 1200]) {
+const FloatDiv = function (selector, animation = 400, gridWidth = 12, reloadFloat = [0, 576, 768, 992, 1200]) {
     // region init
     if (animation === 0 || isNaN(animation)) {
         animation = null;
@@ -255,7 +256,19 @@ const FloatDiv = function (selector, animation = 200, gridWidth = 12, reloadFloa
         for (let position of positions) {
             for (let el of position) {
                 if (el !== null && el.top !== null) {
-                    $(el.target).css('position', 'absolute').css('left', el.left + '%').css('top', el.top + 'px');
+                    if (parent.animation === null) {
+                        $(el.target).css('position', 'absolute').css('left', el.left + '%').css('top', el.top + 'px');
+                    } else {
+                        if (parent.isCreating) {
+                            $(el.target).css('position', 'absolute').css('left', el.left + '%').css('top', el.top + 'px').hide().fadeIn(parent.animation);
+                        } else {
+                            $(el.target).css('position', 'absolute');
+                            $(el.target).animate({left: el.left + '%', top: el.top + 'px'});
+                        }
+                    }
+                    if (parent.isCreating) {
+                        parent.isCreating = false;
+                    }
                 }
             }
         }
