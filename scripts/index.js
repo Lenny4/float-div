@@ -98,13 +98,17 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                         let nextColumnHeight = null;
                         let upperElement = null;
                         if (Array.isArray(positions[line - 1])) {
-                            upperElement = positions[line - 1][indexColumn];
-                            for (let i = indexColumn; i < maxArrayWidth; i++) {
-                                if (positions[line - 1][i] === null) {
-                                    break;
-                                } else if (positions[line - 1][i].target !== upperElement.target) {
-                                    nextColumnHeight = heights[i];
-                                    break;
+                            let tempLine = line;
+                            while (upperElement === null && tempLine > 0) {
+                                upperElement = positions[tempLine - 1][indexColumn];
+                                tempLine--;
+                            }
+                            if (upperElement !== null) {
+                                for (let i = indexColumn; i < maxArrayWidth; i++) {
+                                    if (positions[line - 1][i] !== null && positions[line - 1][i].target !== upperElement.target) {
+                                        nextColumnHeight = heights[i];
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -209,8 +213,6 @@ const FloatDiv = function (selector, animation = 200, maxArrayWidth = 12) {
                 }
             }
         }
-        console.log(heights);
-        console.log(positions);
     }
 };
 
