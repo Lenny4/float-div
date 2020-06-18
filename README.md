@@ -26,11 +26,11 @@ You can require it like that:
 
 ## Warning
 The full signature of `floatDiv` is `floatDiv(selector, animation = 400, gridWidth = 12, reloadFloat = [0, 576, 768, 992, 1200])`
-- selector: the container selector to execute FloatDiv
-- animation: animationTime to fadeIn element (if no animation then set animation to `null`)
-- gridWidth: this plugin is based on a grid system of 12 columns (bootstrap default grid system)
-if you use another lib than bootstrap with a different grid system then change this parameter
-- reloadFloat: corresponds of all the sizes of the window where the disposition of the div might change,
+- `selector`: the container selector to execute FloatDiv
+- `animation`: animationTime to fadeIn element (if no animation then set animation to `null`)
+- `gridWidth`: this package is based on a grid system of 12 columns (bootstrap default grid system)
+if you use another lib than bootstrap with a different grid system then change this parameter.
+- `reloadFloat`: corresponds of all the sizes of the window where the disposition of the div might change,
 by default we use the bootstrap option (https://getbootstrap.com/docs/4.0/layout/grid/#grid-options)
 
 ## Usage
