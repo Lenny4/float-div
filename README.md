@@ -34,7 +34,7 @@ if you use another lib than bootstrap with a different grid system then change t
 by default we use the bootstrap option (https://getbootstrap.com/docs/4.0/layout/grid/#grid-options)
 
 ## Usage
-- #### With bootstrap
+- With bootstrap
 ```html
 <div class="float-div position-relative">
     <div class="card col-12 col-md-3">0<br/>0<br/>0</div>
@@ -62,7 +62,7 @@ by default we use the bootstrap option (https://getbootstrap.com/docs/4.0/layout
 const floatDiv = require('float-div');
 floatDiv('.float-div');
 ```
-- #### Without bootstrap (same result)
+- Without bootstrap (same result)
 ```html
 <div class="float-div position-relative">
     <div class="card" style="width: 25%">0<br/>0<br/>0</div>
