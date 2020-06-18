@@ -1,6 +1,6 @@
 {
   "name": "float-div",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple js package to make div float",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,10 @@
     "url": "git+https://github.com/Lenny4/float-div.git"
   },
   "keywords": [
-    "looks"
+    "looks",
+    "float",
+    "div",
+    "beautifull"
   ],
   "author": "Alexandre Beaujour",
   "license": "MIT",
