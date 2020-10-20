@@ -6,9 +6,9 @@ window.onresize = () => {
         const reloadFloatIndex = parent.reloadFloatIndex;
         const currentReloadFloatIndex = getReloadFloatIndex(parent.reloadFloat);
         if (reloadFloatIndex !== currentReloadFloatIndex) {
-            console.log(1);
             FloatDiv(parent.target, parent.animation, parent.gridWidth, parent.reloadFloat);
             parent.reloadFloatIndex = currentReloadFloatIndex;
+            FloatDiv(parent);
         }
     }
 };
@@ -37,14 +37,24 @@ function registerParentFloatDiv(element, animation, gridWidth, reloadFloatIndex,
     }
 }
 
+function isIterable(obj) {
+    // checks for null and undefined
+    if (obj == null) {
+        return false;
+    }
+    return typeof obj[Symbol.iterator] === 'function';
+}
+
 function getChildrenDiv(parentEl, gridWidth, containerWidth) {
     const result = [];
-    for (const child of parentEl.children) {
-        result.push({
-            target: child,
-            columnWidth: Math.round(gridWidth * (child.clientWidth / containerWidth)),
-            height: child.clientHeight,
-        });
+    if (isIterable(parentEl.children)) {
+        for (const child of parentEl.children) {
+            result.push({
+                target: child,
+                columnWidth: Math.round(gridWidth * (child.clientWidth / containerWidth)),
+                height: child.clientHeight,
+            });
+        }
     }
     return result;
 }
@@ -288,6 +298,9 @@ const FloatDiv = function (selector, animation = 400, gridWidth = 12, reloadFloa
         }
         if (parent.isCreating) {
             parent.isCreating = false;
+        }
+        if (typeof parent.target.style !== 'undefined' && parent.target.style !== null) {
+            parent.target.style.height = Math.max(...heights) + 'px';
         }
     }
 };
